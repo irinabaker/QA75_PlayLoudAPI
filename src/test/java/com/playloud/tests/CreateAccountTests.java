@@ -5,10 +5,9 @@ import com.playloud.dto.users.ErrorDto;
 import com.playloud.dto.users.ErrorListDto;
 import com.playloud.dto.users.UsersRequestDto;
 import com.playloud.dto.users.UsersResponseDto;
-import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
 
-import static io.restassured.RestAssured.given;
+import static com.playloud.core.AppManager.*;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -19,11 +18,7 @@ public class CreateAccountTests extends TestBase {
 
     @Test
     public void createAccountSuccessTest() {
-        UsersResponseDto responseDto = given()
-                .contentType(ContentType.JSON)
-                .body(requestDto)
-                .when()
-                .post(USERS_PATH)
+        UsersResponseDto responseDto = app.getUser().register(requestDto)
                 .then()
                 .assertThat().statusCode(201)
                 .assertThat().body("name",equalTo(NAME))
@@ -34,11 +29,7 @@ public class CreateAccountTests extends TestBase {
 
     @Test
     public void createExistedEmailErrorTest() {
-        ErrorDto errorDto = given()
-                .contentType(ContentType.JSON)
-                .body(UsersRequestDto.of(NAME, EMAIL, PASSWORD))
-                .when()
-                .post(USERS_PATH)
+        ErrorDto errorDto = app.getUser().register(UsersRequestDto.of(NAME, EMAIL, PASSWORD))
                 .then()
                 .assertThat().statusCode(409)
                 .assertThat().body("message",containsString("email already exists"))
@@ -50,14 +41,11 @@ public class CreateAccountTests extends TestBase {
 
     @Test
     public void createAccountWithInvalidPasswordErrorTest() {
-        ErrorListDto errorDto = given()
-                .contentType(ContentType.JSON)
-                .body(UsersRequestDto.of(NAME,
-                        "test" + System.currentTimeMillis() + "@.gm.com",
-                        "1234"))
-                .when()
-                .post(USERS_PATH)
+        ErrorListDto errorDto = app.getUser().register(UsersRequestDto.of(NAME,
+                "test" + System.currentTimeMillis() + "@.gm.com",
+                "1234"))
                 .then()
+                .log().all()
                 .assertThat().statusCode(400)
                 .assertThat().body("error",equalTo("Bad Request"))
                 .extract().response().as(ErrorListDto.class);
