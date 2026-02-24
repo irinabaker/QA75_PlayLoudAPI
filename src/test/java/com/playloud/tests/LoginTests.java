@@ -3,11 +3,12 @@ package com.playloud.tests;
 import com.playloud.core.TestBase;
 import com.playloud.dto.login.LoginRequestDto;
 import com.playloud.dto.login.LoginResponseDto;
+import com.playloud.dto.users.ErrorListDto;
 import org.junit.jupiter.api.Test;
 
 import static com.playloud.core.AppManager.EMAIL;
 import static com.playloud.core.AppManager.PASSWORD;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
 
 public class LoginTests extends TestBase {
 
@@ -29,13 +30,15 @@ public class LoginTests extends TestBase {
 
     @Test
     public void loginWithWrongPasswordErrorTest() {
-        //   ErrorListDto listDto =
+           ErrorListDto listDto =
         app.getUser().login(LoginRequestDto.of(EMAIL, "Bernd"))
                 .then()
                 .assertThat().statusCode(400)
                 .assertThat().body("error", equalTo("Bad Request"))
-            // .extract().response().as(ErrorListDto.class)
+                .assertThat().body("message",hasItem("password must be longer than or equal to 6 characters"))
+             .extract().response().as(ErrorListDto.class)
         ;
-         //  System.out.println(listDto.message() + " *** " + listDto.error());
+           System.out.println(listDto.message() + " *** " + listDto.error());
     }
+    //[password must be longer than or equal to 6 characters] *** Bad Request
 }
