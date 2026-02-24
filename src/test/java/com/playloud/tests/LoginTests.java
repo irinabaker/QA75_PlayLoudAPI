@@ -36,7 +36,8 @@ public class LoginTests extends TestBase {
                 .assertThat().statusCode(400)
                 .assertThat().body("error", equalTo("Bad Request"))
                 .assertThat().body("message",hasItem("password must be longer than or equal to 6 characters"))
-             .extract().response().as(ErrorListDto.class)
+                .assertThat().body("message[0]", containsString("longer than or equal to 6 characters"))
+                .extract().response().as(ErrorListDto.class)
         ;
            System.out.println(listDto.message() + " *** " + listDto.error());
     }
