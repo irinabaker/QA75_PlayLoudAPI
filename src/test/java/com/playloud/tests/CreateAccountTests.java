@@ -5,7 +5,11 @@ import com.playloud.dto.users.ErrorDto;
 import com.playloud.dto.users.ErrorListDto;
 import com.playloud.dto.users.UsersRequestDto;
 import com.playloud.dto.users.UsersResponseDto;
+import com.playloud.utils.DbData;
 import org.junit.jupiter.api.Test;
+
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 import static com.playloud.core.AppManager.*;
 import static org.hamcrest.Matchers.containsString;
@@ -18,13 +22,23 @@ public class CreateAccountTests extends TestBase {
 
     @Test
     public void createAccountSuccessTest() {
-        UsersResponseDto responseDto = app.getUser().register(requestDto)
+     //   UsersResponseDto responseDto =
+        int userId = app.getUser().register(requestDto)
                 .then()
                 .assertThat().statusCode(201)
-                .assertThat().body("name",equalTo(NAME))
-                .extract().response().as(UsersResponseDto.class);
+                .assertThat().body("name", equalTo(NAME))
+                .extract().path("id");
+        // .extract().response().as(UsersResponseDto.class);
 
-        System.out.println(responseDto.id() + " *** " + responseDto.name());
+     //   System.out.println(responseDto.id() + " *** " + responseDto.name());
+        try {
+            PreparedStatement deleteStmt = connection.prepareStatement(DbData.queryDelete);
+            deleteStmt.setInt(1, userId);
+
+            deleteStmt.executeUpdate();
+        }catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
